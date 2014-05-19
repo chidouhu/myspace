@@ -444,6 +444,82 @@ val i = inbox()
 i watch target
 </code></pre>
 
+<h5>3.1.2 Actor API</h5>
+<p>Actor特质只定义了一个抽象方法, 就是上文中出现的receive, 该方法实现了actor的行为.</p>
+<p>如果当前actor的行为和接收到的消息不匹配, unhandled会被调用并将一个akka.actor.UnhandledMessage(message, sender, recipient)发布到acotr系统事件流(可以在akka.actor.debug.unhandled中设置将错误信息转换为debug消息).</p>
+<p>此外, 还提供了:
+<strong><em>self</em></strong> 该actor的ActorRef引用.</p>
+<p><strong><em>sender</em></strong> 最后接收的消息的发送者actor引用, 通常用于回复消息.</p>
+<p><strong><em>supervisorStrategy</em></strong> 用户重写该策略以管理子actor. 该策略通常在acotr内部声明, 以便通过决策函数获取actor内部状态: 因为错误信息和其他信息一样, 都会被发送给管理者, 该actor的所有值和变量通过sender引用都可以获取到.</p>
+<p><strong><em>context</em></strong> 暴露该actor的上下文信息和当前当前消息, 如:
+- 用于创建子actor的工场方法(actorOf)
+- 该actor属于的系统
+- 父管理者
+- 所有管理的子actor
+- 生命周期监控
+- 热插拔行为栈(Become/Unbecome)</p>
+<p>你可以引用context成员来省略context.前缀:
+	class FirstActor extends Actor {
+		import context._
+		val myActor = actorOf(Props[MyActor], name = &quot;myactor&quot;)
+		def receive = {
+			case x =&gt; myActor ! x
+		}
+	}</p>
+<p>此外一些可见的方法是需要用户重写的生命周期hook方法:</p>
+<pre><code>def preStart(): Unit = ()
+
+def postStop(): Unit = ()
+
+def preRestart(reason: Throwable, message: Option[Any]): Unit = {
+    context.children foreach { child =&gt;
+        context.unwatch(child)
+        context.stop(child)
+    }
+    postStop()
+}
+
+def postRestart(reason: Throwable): Unit = {
+    preStart()
+}
+</code></pre>
+
+<p>上面的实现是actor特质默认提供的.</p>
+<h6>Actor生命周期</h6>
+<p><img src="images/actor_lifecycle.png?raw=true" /></p>
+<p>actor系统中的路径表示一个可能被一个活跃actor占据的&quot;地址&quot;. 最初路径是空的(系统初始actor除外). 当调用actorOf()方法时, 通过向Props传递指定路径来分配一个该actor的化身. actor的化身由路径和一个UID唯一标识. 重启操作仅仅交换由Props定义的actor实例, 化身保持不变, 因此UID也不变.</p>
+<p>该化身的生命周期在actor停止的时候结束. 此时适当的生命周期事件会被调用, 处于监控状态的actor会收到通知. 在该化身结束后, 该路径可以通过actorOf方法重用. 此时新化身的名称和之前一样但是UID不同.</p>
+<p>ActorRef始终表示一个化身(路径和UID)而不仅仅是一个给定的路径. 因此如果一个actor停止并且创建了一个新的同名actor, 旧化身的ActorRef不会指向新的.</p>
+<p>ActorSelection也指向该路径并且无视当前哪个化身正占据该路径. 因此ActorSelection不能被watch. 可以通过向ActorSelection发送Identify消息来获取该路径下的ActorRef, 该消息会返回一个包含正确引用的ActorIdentify结构. 具体可以通过ActorSelection的resolveOne方法, 该方法返回一个匹配ActorRef的Future.</p>
+<h6>生命周期监控(DeathWatch)</h6>
+<p>当一个actor终止时(i.e. 永久结束, 非临时错误或重启), 为了得到通知, 该actor需要将自己的终止消息注册到其他actor上(参见Stopping Actors). 该服务是由actor系统的DeatchWatch组件提供的.</p>
+<p>注册一个监控很简单:
+	import akka.actor.{ Actor, Props, Terminated }</p>
+<pre><code>class WatchActor extends Actor {
+    val child = context.actorOf(Props.empty, &quot;child&quot;)
+    context.watch(child) // &lt;- this is the only call needed for registration
+    var lastSender = system.deadLetters
+
+    def receive = {
+        case &quot;kill&quot; =&gt;
+            context.stop(child); lastSender = sender()
+        case Terminated(`child`) =&gt; lastSender ! &quot;finished&quot;
+    }
+}
+</code></pre>
+
+<p>需要注意终止消息的生成的顺序和注册以及终止发生的顺序是独立无关的. 特别是, 即使被观察的actor在注册的时候已经终止了, 观察者actor一样也会收到终止消息.</p>
+<p>重复注册多次不会多次生成消息, 但是不能保证只收到一个消息: 如果被观察的actor终止并且将消息放入队列了, 而在这个消息被处理之前另一个注册刚好完成了, 这时候队列中会再次放入一个消息, 因为一个已经终止的actor注册监控将会立即生成一个终止消息.</p>
+<p>也可以通过context.unwatch(target)方法来解注册监控另一个actor的存活状态. 这在终止消息被放入mailbox以后也是有效的, 只要调用unwatch方法该actor的所有终止消息都不会再被处理了.</p>
+<h6>Start Hook</h6>
+<p>所有的actor通过一个容错策略链接到另一个actor, 都可以被监控起来. Actors可能在处理某个消息的时候重启了, 该重启可能会设计到以下几个hook:
+1. 旧actor通过调用preRestart方法可以得到导致重启的异常和触发异常的消息; 如果重启不是由于处理某个消息导致的, 那么第二个参数为空, e.g. 当监控着不处理异常并且由监控者控制重启, 或者actor由于兄弟节点的错误导致重启. 如果消息可用, 那么消息的发送者通常也可以获取到(通过调用sender).
+2. actorOf调用的工场方法用于生成新的实例.
+3. 新actor的PostRestart方法在异常重启时被调用. 默认preStart会被调用, 就像正常启动一样.</p>
+<p>actor重启只替换实际的actor对象; mailbox的内容在重启时不收影响, 所以在postRestart hook返回后可以继续处理消息. 导致异常的消息不回再被接受. 任何发送给正在重启的actor的信息都会正常的放入它的mailbox.</p>
+<p>***Warning: 注意错误通知的顺序和相关的用户消息不是确定的. 特别的, 父actor可能会在它处理最后一条子actor发送过来的消息时重启该子actor. 参见讨论: 消息顺序.</p>
+<h6>Stop Hook</h6>
+<p>在停止某个actor之后, 它的postStop会被调用, 这可以用于e.g. 向其它服务解注册该actor. 该hook可以确保在所有队列的消息已被禁用后才被调用, i.e. 发送给停止的actor的消息会被转送到ActorSystem的deadLetters.</p>
 
 </body>
 </html>
