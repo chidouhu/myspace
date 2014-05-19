@@ -277,7 +277,7 @@ ActorSelection也指向该路径并且无视当前哪个化身正占据该路径
 
 actor重启只替换实际的actor对象; mailbox的内容在重启时不收影响, 所以在postRestart hook返回后可以继续处理消息. 导致异常的消息不回再被接受. 任何发送给正在重启的actor的信息都会正常的放入它的mailbox.
 
-***Warning: 注意错误通知的顺序和相关的用户消息不是确定的. 特别的, 父actor可能会在它处理最后一条子actor发送过来的消息时重启该子actor. 参见讨论: 消息顺序.
+***Warning: 注意错误通知的顺序和相关的用户消息不是确定的. 特别的, 父actor可能会在它处理最后一条子actor发送过来的消息时重启该子actor. 参见讨论: 消息顺序.***
 
 ###### Stop Hook
 在停止某个actor之后, 它的postStop会被调用, 这可以用于e.g. 向其它服务解注册该actor. 该hook可以确保在所有队列的消息已被禁用后才被调用, i.e. 发送给停止的actor的消息会被转送到ActorSystem的deadLetters.
