@@ -281,3 +281,132 @@ actor重启只替换实际的actor对象; mailbox的内容在重启时不收影�
 
 ###### Stop Hook
 在停止某个actor之后, 它的postStop会被调用, 这可以用于e.g. 向其它服务解注册该actor. 该hook可以确保在所有队列的消息已被禁用后才被调用, i.e. 发送给停止的actor的消息会被转送到ActorSystem的deadLetters.
+
+##### 3.1.3 通过Actor Selection区分Actor
+如同Actor Reference, Path和Address描述的那样, 每个actor都有独立的逻辑地址, 该地址可以通过追踪actor链来获取(该链从子到父直到actor系统的根); actor还有一个物理地址, 如果监控者的链包含了任何远程监控者, 该地址会发生变化. 这些地址都是让系统寻找actor的, e.g. 当接受到一个远程消息时可以找到接受者, 该地址还有更直接的用处: actor可能会通过指明绝对或相对路径来寻找其他acotr-不管是物理地址还是逻辑地址-并且接收到ActorSelection的结果:
+
+	// will look up this absolute path
+	context.actorSelection("/user/serviceA/aggregator")
+	// will look up sibling beneath same supervisor
+	context.actorSelection("../joe")
+
+提供的路径按照java.net.URI来解析, 这意味着路径元素是用/分割的. 如果路径以/开始, 它就是绝对路径并且搜寻会从根("/user"的父)开始查找; 否则就是从当前actor开始. 如果路径元素等于.., 那么就会从当前actor的上一层监控者地址开始查找. 需要注意在actor路径中..始终表示逻辑结构, i.e.监控者.
+
+actor selection的路径元素可能会包含通配符, 允许消息广播:
+
+	// will look all children to serviceB with names starting with worker
+	context.actorSelection("/user/serviceB/worker*")
+	// will look up all siblings beneath same supervisor
+	context.actorSelection("../*")
+
+消息可以通过ActorSelection来传递, ActorSelection的路径会在传递消息的时候查找. 如果该selection不匹配任何actors则该消息将被丢弃.
+
+为了ActorSelection获取一个ActorRef你需要发送一个消息给selection并且使用sender引用来回复. 这是一个系统内建的Identify消息, 所有的actor都可以识别并且自动回复一个包含ActorRef的ActorIdentity消息. 该消息会被actors which are traversed特殊处理, 如果一个具体的名称查找失败了, 会生成负结果. 请注意这不意味着该回复消息一定会被发送, 这仍然只是一条普通消息.
+
+	import akka.actor.{ Actor, Props, Identity, ActorIdentity, Terminated }
+
+	class Follower extends Actor {
+		val identifyId = 1
+		context.actorSelection("/user/another") ! Identity(identifyId)
+
+		def receive = {
+			case ActorIdentity(`identifyId`, Some(ref)) =>
+				context.watch(ref)
+				context.watch(active(ref))
+			case ActorIdentity(`identifyId`, Node) => context.stop(self)
+		}
+
+		def active(another: ActorRef): Actor.Receive = {
+			case Terminated(`another`) => context.stop(self)
+		}
+	}
+
+你可以通过ActorSelection的resolveOne方法来获取一个ActorSelection的ActorRef. 如果actor存在, 它会返回一个匹配ActorRef的Future; 如果actor不存在的话会返回错误[akka.actor.ActorNotFound], 或者如果identification为完成则返回超时.
+
+如果开启了remoting, 远程actor地址也可以被查找到:
+
+	context.actorSelection("akka.tcp://app@otherhost:1234/user/serviceB")
+
+在Remoting Example中给出了一个actor查找的例子.
+
+***注意: actorFor已经弃用***
+
+##### 3.1.4 消息和不可变性
+***IMPORT:***  消息可以是任意类型的, 但是是不可变的. Scala不能强制不可变, 所以这只能形成习惯. 原始类型如String, Int, Boolean始终是不可变的. 和这些不同的是, 建议使用Scala不可变的case class(如果你不显示地暴露状态), 在接收端用模式匹配来配合.
+
+这里是一个例子:
+
+	// define the case class
+	case class Register(user: User)
+
+	// create a new case class message
+	val message = Register(user)
+
+##### 3.1.5 发送消息
+消息可以通过以下方法来发送给Actor.
+- ! 意味着"fire-and-forget", e.g. 异步发送消息并立刻返回. 也称为tell.
+- ? 异步发送消息并且返回一个代表可能回复的Future. 也称为ask.
+
+在每个发送者端消息是保序的.
+
+***Note: 使用ask有性能隐患, 因为当超时时需要追踪某些信息, 需要将Promise过度到ActorRef并且需要通过remoting可以获取. 所以考虑到性能尽可能使用tell, 只有在必须时使用ask.
+
+###### Tell: Fire-forget
+这是推荐的发送消息的方法. 非阻塞等待消息. 有最好的并发和可扩展特性.
+
+	actorRef ! message
+
+如果在一个actor内部被唤醒, 发送actor的引用会伴随着消息被隐式地传递, 接受actor可以通过sender(): ActorRef成员函数来获取. 目标actor可以通过sender() ! replyMsg来回复原始发送者.
+
+如果被一个不是actor的实例唤醒, 发送者默认将是deadLetters的actor引用.
+
+###### Ask: Send-And-Receive-Future
+ask模式包含了actor和future, 因此它提供了使用模式而不是一个ActorRef方法:
+
+	import akka.pattern.{ ask, pipe }
+	import system.dispatcher // The ExecutionContext that will be used
+	case class Result(x: Int, s: String, d: Double)
+	case object Request
+
+	implicit val timeout = Timeout(5 seconds) // needed for `?` below
+
+	val f: Future[Result] = 
+		for {
+			x <- ask(actorA, Request).mapTo[Int] // call pattern directly
+			s <- (actorB ask Request).mapTo[String] // call by implicit conversion
+			d <- (actorC ? Request).mapTo[Double] // call by symbolic name
+		} yield Result(x, s, d)
+
+	f pipeTo actorD // .. or ..
+	pipe(f) to ActorD
+
+该例子阐明了ask和future的pipeTo模式, 因为这类似一种天然的融合. 请注意以上所有都是非阻塞和异步的: ask产生一个Future, for表达式组成了一个新的future, pipeTo为future安装了一个onComplete-handler来影响另一个actor的结果汇集(???)
+
+使用ask可以像tell一样给接收actor发送消息, 接收actor必须回复sender() ! reply来完成返回Future. ask操作 //TODO ask.
+
+##### 3.1.6 接收消息
+Actor必须实现receive方法来接受消息:
+
+	type Receive = PartialFunction[Any, Unit]
+
+	def receive: Actor.Receive
+
+该方法返回一个PartialFunction, e.g.一个'match/case'语句, 使用Scala的模式匹配可以让消息匹配到不同的case语句. 这里有一个例子:
+
+	import akka.actor.Actor
+	import akka.actor.Props
+	import akka.event.Logging
+
+	class MyActor extends Actor {
+		val log = Logging(context.system, this)
+		def receive = {
+			case "test" => log.info("received test")
+			case _      => log.info("received unknown message")
+		}
+	}
+
+##### 3.1.7 回复消息
+
+
+
+	

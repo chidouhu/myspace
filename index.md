@@ -13,6 +13,11 @@ Actor模式的Scala实现, 从erlang中借鉴了很多有用的东西.
 
 [let's akka!](akka.html)
 
+### Spark
+下一代MapReduce
+
+[spark调度器模块](scheduler.html)
+
 ## Contact Me
 - email:		lonely8658@gmail.com
 - weibo:		[weibo.com/chidouhu](http://weibo.com/chidouhu)

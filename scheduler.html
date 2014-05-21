@@ -1,0 +1,409 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>scheduler</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+</head>
+<body>
+<h1>Scheduler</h1>
+<h2>DAGScheduler</h2>
+<p>DAGScheduler实现了面向stage的调度层. 它将每个job的stage划分成DAG, 追踪RDD和stage输出, 找出一个可以运行作业的最小化调度方法. 接下来就将每个stage以TaskSet提交给TaskScheduler执行.</p>
+<p>为了构造出stage的DAG图, 该类还需要根据当前的cache状态, 计算出每个task优先跑在那个节点上, 并将该location传递给低层的TaskScheduler. 此外, 它需要处理shuffule输出文件丢失的异常, 此时前一个stage可能会被重新提交. 不是由shuffle文件丢失引起的错误将会由TaskScheduler处理, 这些task在取消整个stage之前会被重试多次.</p>
+<p><strong><em>THREADING: 该类的所有逻辑操作都是在执行run()方法的单线程完成的, 事件都被提交到一个同步队列(eventQueue)中. public的API方法, 如runJob, taskEnded和executorLost, 都会异步的把事件放入到这个队列中. 所有其他的方法都应该是private的.</em></strong></p>
+<p>先看start方法. start方法启动了eventProcessorActor, 该actor有两个职责:
+- 等待事件, 如作业提交, 作业结束, 作业失败等. 调用[[org.apache.spark.scheduler.DAGScheduler.processEvent()]]来处理事件.
+- 调度周期task来重新提交失败的stage.</p>
+<p><strong><em>注意: 该actor不能在构造函数里启动, 因为周期任务参考了一些内部状态的封闭[[org.apache.spark.scheduler.DAGScheduler]]对象, 因此在[[org.apache.spark.scheduler.DAGScheduler]完全构造好之前不能调度.</em></strong></p>
+<pre><code>def start() {
+    eventProcessActor = env.actorSystem.actorOf(Props(new Actor {
+
+        def receive = {
+            case event: DAGSchedulerEvent =&gt;
+                logTrace(&quot;Get event of type &quot; + event.getClass.getName)
+
+                /**
+                 * All events are fowarded to `processEvent()`, so that the event processing logic can
+                 * easily tested without starting a dedicated actor. Please refer to `DAGSchedulerSuite`
+                 * for details.
+                 * /
+                if (!processEvent(event)) {
+                    submitWaitingStages()
+                } else {
+                    context.stop(self)
+                }
+        }
+    }))
+}
+</code></pre>
+
+<p>可见processEvent是所有事件的入口, 需要注意一下这个函数的返回值, 如果是true表示事件循环可以结束了. processEvent主要针对不同的事件做不同的处理:</p>
+<ul>
+<li>
+<p>JobSubmitted</p>
+<ul>
+<li>newStage 创建一个Stage, 要么直接用于result stage, 或者用于newOrUsedStage中的shuffle map stage的创建的一部分. 注意, 如果要生成shuffle map stage, 那么一定要用newOrUsedStage方法, 而不是直接使用newStage. 该方法的实现其实就是new一个Stage和一个StageInfo, 并且更新一堆map.</li>
+<li>newActiveJob</li>
+<li>
+如果允许本地启动, 那么向listenerBus post一个SparkListenerJobStart消息, 再调用runLocally方法
+<ul>
+<li>listenerBus是什么? 其实是一个异步地向SparkListeners传递SparkListenerEvents事件的工具. 后面单独介绍.</li>
+<li>runLocally方法主要是用于在本地的一个RDD上运行一个作业, 假设它只有一个partition并且没有依赖. 我们会另起一个线程来完成这个操作, 这样就不会阻塞住DAGScheduler的事件循环.</li>
+<li>runLocally的实际工作线程主要就是调用job的func方法,调用成功后向job的listener发送taskSucceeded消息, 执行taskContext的executeOnCompleteCallbacks. 如果在过程中出现了异常, 就会向job的listener发送jobFailed消息, 最终不论成功与否, 都会向listenerBus发送SparkListenerJobEnd消息.</li>
+</ul>
+</li>
+<li>
+如果非本地, 那么还是向listenerBus post一个SparkListenerJobStart消息, 再调用submitStage方法
+<ul>
+<li>submitStage方法首先调用activeJobForStage方法, 如果返回的jobID已定义且stage不在waiting, running, failed的集合里, 则首先获取所有的missingParentStage, 有missing的话先递归提交missing的, 没有的话调用submitMissingTasks</li>
+<li>submitMissingTasks(父stage已经全都执行完了). 首先取出所有的pendingTask, 接下来根据stage类型进行操作, 如果stage是ShuffleMap, 则new出一系列ShuffleMapTask; 否则这就是final stage, 先从resultStageToJob找到所有的job, 接下来new出一系列ResultTask. 这时候会先给listenerBus发送一个SparkListenerStageSubmitted消息, 然后会调用SparkEnv.get.closureSerializer.newInstance().serialize(tasks.head), 先把task序列化好, 最后就调用taskSched.submitTasks(new TaskSet(...))</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>JobCancelled</p>
+</li>
+<li>JobGroupCancelled</li>
+<li>AllJobCancelled</li>
+<li>ExecutorGained</li>
+<li>ExecutorLost</li>
+<li>BeginEvent</li>
+<li>GettingResultEvent</li>
+<li>CompletionEvent</li>
+<li>TastSetFailed</li>
+<li>ResubmitFailedStages</li>
+<li>StopDAGScheduler</li>
+</ul>
+<h2>SparkListenrBus</h2>
+<p>主要成员变量有</p>
+<pre><code>// 一个SparkListener的数组
+private val sparkListeners = new ArrayBuffer[SparkListener] with SynchronizedBuffer[SparkListner]
+// 一个事件队列
+private val eventQueue = new LinkedBlockingQueue[SparkListenerEvents](EVENT_QUEUE_CAPACITY)
+</code></pre>
+
+<p>主线程(守护)一直尝试从事件队列里取出事件, 然后对每个SparkListener执行该事件.</p>
+<p>主要方法:
+post方法就是往事件队列里面push事件</p>
+<pre><code>def post(event: SparkListenerEvents) {
+    val eventAdded = eventQueue.offer(event)
+    if (!eventAdded &amp;&amp; !queueFullErrorMessageLogged) {
+        queueFullErrorMessageLoged = true
+    }
+}
+</code></pre>
+
+<h2>SparkListener</h2>
+<p>首先定义了一系列SparkListenerEvents:</p>
+<ul>
+<li>SparkListenerStageSubmitted</li>
+<li>SparkListenerStageCompleted</li>
+<li>SparkListenerTaskStart</li>
+<li>SparkListenerTaskGettingResult</li>
+<li>SparkListenerTaskEnd</li>
+<li>SparkListenerJobStart</li>
+<li>SparkListenerJobEnd</li>
+</ul>
+<p>特质SparkListener主要定义了一堆onCompletion接口.</p>
+<ul>
+<li>onStageCompleted</li>
+<li>onStageSubmitted</li>
+<li>onTaskStart</li>
+<li>onTaskGettingResult</li>
+<li>onTaskEnd</li>
+<li>onJobStart</li>
+<li>onJobEnd</li>
+</ul>
+<p>StatsReportListener类主要记录了当每个stage完成时的一些统计信息, 因此只实现了一个onStageCompleted接口.伴生对象StatReportListener实现了一堆metrics获取的方法.</p>
+<h2>TaskScheduler</h2>
+<h2>TaskSet</h2>
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
