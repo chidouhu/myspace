@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>index</title>
+<title>vim-scala</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">
 /* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
@@ -291,32 +291,39 @@ img {
 </style>
 </head>
 <body>
-<h1>About Me</h1>
-<p>我是赤豆糊,目前在百度基础架构部工作.主要负责流式计算方向,此外还参与Spark和Yarn相关的工作.</p>
-<h2>时间轴</h2>
-<ul>
-<li>2012.6-now 		百度基础架构部流式计算</li>
-<li>2012.1-2013.3 		百度基础架构部实习</li>
-<li>2011.6-2011.10 	百度系统部实习</li>
-<li>2009.9-2012.6		中国科学技术大学网络信息中心</li>
-</ul>
-<h2>Learning</h2>
-<h3>Scala</h3>
-<p>配置基于vim的scala开发环境.</p>
-<p><a href="vim-scala.html">scala based vim</a></p>
-<h3>Akka</h3>
-<p>Actor模式的Scala实现, 从erlang中借鉴了很多有用的东西.</p>
-<p><a href="akka.html">let's akka!</a></p>
-<h3>Spark</h3>
-<p>下一代MapReduce</p>
-<p><a href="scheduler.html">spark调度器模块</a></p>
-<h2>Contact Me</h2>
-<ul>
-<li>email:		lonely8658@gmail.com</li>
-<li>weibo:		<a href="http://weibo.com/chidouhu">weibo.com/chidouhu</a></li>
-<li>linkedin:	<a href="http://cn.linkedin.com/in/joeyfang">cn.linkedin.com/in/joeyfang</a></li>
-<li>github:	<a href="http://github.com/chidouhu">github.com/chidouhu</a></li>
-</ul>
+<h1>基于vim配置scala开发环境</h1>
+<p>因为习惯了vim, 所以急需一个基于vim的scala开发环境. 相对高大上的emacs来说, vim对scala支持的不算好, 和专用的一些IDE更是不能比了...不过通过一番适配, 至少可以支持语法高亮和ctags跳转了, 这样也算是勉强能用了. 这里假定读者已经安装好了较高版本的vim(笔者的vim版本7.2), ctags工具和taglist插件.</p>
+<h2>1. 语法高亮</h2>
+<p>首先到<a href="https://github.com/scala/scala-dist/tree/master/tool-support/src/vim">scala-dist</a>下载需要的插件, 放到本地的$HOME/.vim文件夹里.</p>
+<h2>2. ctags跳转</h2>
+<p>创建$HOME/.ctags文件, 把下面的代码拷贝进去</p>
+<pre><code>--langdef=scala
+--langmap=scala:.scala
+--regex-scala=/^[ \t]*class[ \t]+([a-zA-Z0-9_]+)/\1/c,classes/
+--regex-scala=/^[ \t]*trait[ \t]+([a-zA-Z0-9_]+)/\1/t,traits/
+--regex-scala=/^[ \t]*type[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
+--regex-scala=/^[ \t]*def[ \t]+([a-zA-Z0-9_\?]+)/\1/m,methods/
+--regex-scala=/^[ \t]*val[ \t]+([a-zA-Z0-9_]+)/\1/C,constants/
+--regex-scala=/^[ \t]*var[ \t]+([a-zA-Z0-9_]+)/\1/l,local variables/
+--regex-scala=/^[ \t]*package[ \t]+([a-zA-Z0-9_.]+)/\1/p,packages/
+--regex-scala=/^[ \t]*case class[ \t]+([a-zA-Z0-9_]+)/\1/c,case classes/
+--regex-scala=/^[ \t]*final case class[ \t]+([a-zA-Z0-9_]+)/\1/c,case classes/
+--regex-scala=/^[ \t]*object[ \t]+([a-zA-Z0-9_]+)/\1/o,objects/
+--regex-scala=/^[ \t]*private def[ \t]+([a-zA-Z0-9_]+)/\1/pd,defs/
+</code></pre>
+
+<p>这里其实并不是特别严格的语法匹配, 仅仅是关键字匹配. 在使用时发现如果代码里用了override def这种该匹配规则匹配不到, 可以在def下面再加一个override def. 这样你的ctags就可以支持scala程序了. 可以在项目目录下执行</p>
+<pre><code>ctags -h &quot;.scala&quot; -R
+</code></pre>
+
+<p>接下来就可以在代码里面用ctrl + ']'跳转了.</p>
+<h2>3. TagList设置</h2>
+<p>默认的taglist不识别scala语法, 不过在使用ctags匹配规则以后我们已经可以配置taglist支持scala了. 具体只要在$HOME/.vim/plugin/taglist.vim里找到s:tlist<em>def</em>yacc_settings, 在这一行下面加入</p>
+<pre><code>let s:tlist_def_scala_settings = 'scala;t:trait;c:class;T:type;' .
+                  \ 'm:method;C:constant;l:local;p:package;o:object'
+</code></pre>
+
+<p>OK, done.</p>
 
 </body>
 </html>

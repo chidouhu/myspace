@@ -8,6 +8,11 @@
 - 2009.9-2012.6		中国科学技术大学网络信息中心
 
 ## Learning
+### Scala
+配置基于vim的scala开发环境.
+
+[scala based vim](vim-scala.html)
+
 ### Akka
 Actor模式的Scala实现, 从erlang中借鉴了很多有用的东西.
 
